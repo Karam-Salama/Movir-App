@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "863551162558",
+    "project_id": "movir-app-8bb89",
+    "storage_bucket": "movir-app-8bb89.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:863551162558:android:3913a6521abf942bf336ef",
+        "android_client_info": {
+          "package_name": "com.example.movir_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzQ4ZroRH8Yo9V7qitNGsjTheY-cJEnN0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

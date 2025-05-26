@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Movir App</string>
+    <string name="facebook_app_id">699012782729904</string>
+    <string name="fb_login_protocol_scheme">fb1234</string>
+    <string name="facebook_client_token">48a9d3020199aed0f976501a00040849</string>
+</resources>
