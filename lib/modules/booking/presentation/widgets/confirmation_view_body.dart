@@ -59,39 +59,6 @@ class ConfirmationViewBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    style: AppTextStyle.Kanit700style16Black.copyWith(
-                      fontSize: 14,
-                      color: AppColors.whiteColor,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    backGroundColor: AppColors.primaryColor,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    text: AppStrings.exportToPdf,
-                    onPressed: () {},
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomButton(
-                    style: AppTextStyle.Kanit700style16Black.copyWith(
-                      fontSize: 14,
-                      color: AppColors.whiteColor,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    backGroundColor: AppColors.primaryColor,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    text: AppStrings.exportToImage,
-                    onPressed: () {},
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             CustomButton(
                 style: AppTextStyle.Kanit700style16Black,
                 backGroundColor: AppColors.primaryColor,

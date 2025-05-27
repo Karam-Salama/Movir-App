@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/utils/app_assets.dart';
-import '../widgets/search_view_body.dart';
+import '../../../../../core/utils/app_assets.dart';
+import '../widgets/setting_view_body.dart';
 
-class SearchView extends StatelessWidget {
-  const SearchView({super.key});
-  static const routeName = '/search-view';
+class SettingView extends StatelessWidget {
+  const SettingView({super.key});
+  static const routeName = '/Setting-view';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +18,7 @@ class SearchView extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        child: SearchViewBody(),
+        child: SettingViewBody(),
       ),
     );
   }

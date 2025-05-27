@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
-class TicketsViewBody extends StatelessWidget {
-  const TicketsViewBody({super.key});
+import '../../../../core/utils/app_strings.dart';
+import '../../../booking/presentation/widgets/booking_view_app_bar.dart';
+
+class SettingViewBody extends StatelessWidget {
+  const SettingViewBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +16,9 @@ class TicketsViewBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Tickets',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              CustomAppBar(
+                text: AppStrings.setting,
+                onTap: () {},
               ),
             ],
           ),

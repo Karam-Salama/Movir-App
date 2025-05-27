@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/app_text_styles.dart';
 
 class CustomAppBar extends StatelessWidget {
-  const CustomAppBar({super.key, required this.text});
+  CustomAppBar({super.key, required this.text, this.onTap});
   final String text;
+  void Function()? onTap;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -15,9 +16,7 @@ class CustomAppBar extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: onTap ?? () => Navigator.pop(context),
               child: Container(
                 width: 40,
                 height: 40,

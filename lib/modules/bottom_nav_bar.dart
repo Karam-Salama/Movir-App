@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:movir_app/modules/home/presentation/views/home_view.dart';
-import 'package:movir_app/modules/search/views/search_view.dart';
-import 'package:movir_app/modules/tickets/views/tickets_view.dart';
+import 'package:movir_app/modules/search/presentation/views/search_view.dart';
+import 'package:movir_app/modules/tickets/presentation/views/tickets_view.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 import '../core/utils/app_assets.dart';
 import '../core/utils/app_colors.dart';
-import 'setting/views/setting_view.dart';
+import 'setting/presentation/views/setting_view.dart';
 
 PersistentTabController _controller = PersistentTabController();
 

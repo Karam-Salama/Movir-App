@@ -23,6 +23,9 @@ abstract class APIEndPoints {
       '$baseUrl/movie/$movieId/credits';
   static String getMovieReviews(String movieId) =>
       '$baseUrl/movie/$movieId/reviews';
+
+  static String getMovieBySearch(String movieQuery) =>
+      '$baseUrl/search/movie?query=$movieQuery';
 }
 
 class ApiKeys {

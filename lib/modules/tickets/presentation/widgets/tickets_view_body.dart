@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
-class SettingViewBody extends StatelessWidget {
-  const SettingViewBody({super.key});
+import '../../../../core/utils/app_strings.dart';
+import '../../../booking/presentation/widgets/booking_view_app_bar.dart';
+import '../../../home/presentation/views/home_view.dart';
+
+class TicketsViewBody extends StatelessWidget {
+  const TicketsViewBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +18,9 @@ class SettingViewBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Settings',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              CustomAppBar(
+                text: AppStrings.tickets,
+                onTap: () {},
               ),
             ],
           ),

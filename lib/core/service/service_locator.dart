@@ -9,6 +9,8 @@ import 'package:get_it/get_it.dart';
 import '../../modules/booking/data/server/repos/booking_repo_imple.dart';
 import '../../modules/home/data/repos/home_repo_implment.dart';
 import '../../modules/home/domain/repos/home_repo.dart';
+import '../../modules/search/data/repos/search_repo_Imple.dart';
+import '../../modules/search/domain/search_repo.dart';
 import '../api/dio_consumer.dart';
 import '../database/cache_helper.dart';
 import 'database_service.dart';
@@ -35,4 +37,7 @@ void setUpServiceLocator() {
       .registerSingleton<HomeRepo>(HomeRepoImplment(api: getIt<ApiConsumer>()));
   getIt.registerSingleton<BookingRepo>(
       BookingRepoImple(api: getIt<ApiConsumer>()));
+
+  getIt.registerSingleton<SearchRepo>(
+      SearchRepoImple(api: getIt<ApiConsumer>()));
 }

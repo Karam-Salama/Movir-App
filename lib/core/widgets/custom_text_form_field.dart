@@ -13,6 +13,7 @@ class CustomTextFormField extends StatelessWidget {
   final Function(String)? onFieldSubmitted;
   final String? Function(String?)? validator;
   final void Function(String?)? onSaved;
+  final TextEditingController? controller;
 
   const CustomTextFormField({
     super.key,
@@ -25,11 +26,13 @@ class CustomTextFormField extends StatelessWidget {
     this.onFieldSubmitted,
     this.validator,
     this.onSaved,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: controller,
       validator: validator,
       onSaved: onSaved,
       onChanged: onChanged,

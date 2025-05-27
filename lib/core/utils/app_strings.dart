@@ -62,4 +62,10 @@ abstract class AppStrings {
   static const String backToHome = "Back to Home";
   static const String exportToPdf = "Export to PDF";
   static const String exportToImage = "Export to Image";
+
+  // Search
+  static const String search = "Search";
+  static const String discover = "Discover";
+  static const String tickets = "Tickets";
+  static const String setting = "setting";
 }

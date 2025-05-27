@@ -153,4 +153,14 @@ class Assets {
   /// Assets for assetsImagesDividerImage
   /// assets/images/divider.png
   static const String assetsImagesDividerImage = "assets/images/divider.png";
+
+  /// Assets for assetsImagesNoResultFoundImage
+  /// assets/images/no_result_found.png
+  static const String assetsImagesNoResultFoundImage =
+      "assets/images/no_result_found.png";
+
+  /// Assets for assetsSvgsNoResultFoundIcon
+  /// assets/svgs/no_result_found.svg
+  static const String assetsSvgsNoResultFoundIcon =
+      "assets/svgs/no_result_found.svg";
 }
