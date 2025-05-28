@@ -68,4 +68,7 @@ abstract class AppStrings {
   static const String discover = "Discover";
   static const String tickets = "Tickets";
   static const String setting = "setting";
+  static const String profile = "Profile";
+  static const String wishlist = "Wishlist";
+  static const String logout = "logout";
 }

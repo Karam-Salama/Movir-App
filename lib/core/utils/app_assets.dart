@@ -163,4 +163,13 @@ class Assets {
   /// assets/svgs/no_result_found.svg
   static const String assetsSvgsNoResultFoundIcon =
       "assets/svgs/no_result_found.svg";
+
+  /// assetsSvgsSignOutIcon
+  /// assets/svgs/sign_out_icon.svg
+  static const String assetsSvgsSignOutIcon = "assets/svgs/sign_out_icon.svg";
+
+  /// assetsImagesLogoutImage
+  /// assets/images/sign_out_image.png
+  static const String assetsImagesLogoutImage =
+      "assets/images/sign_out_image.png";
 }

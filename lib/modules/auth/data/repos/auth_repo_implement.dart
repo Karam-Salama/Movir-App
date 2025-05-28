@@ -217,14 +217,14 @@ class AuthRepoImplement extends AuthRepo {
   }
 
   @override
-  Future<void> signOut() async {
+  Future<Either<Failure, void>> signOut() async {
     try {
-      await firebaseAuthService.signOut();
+      return Right(await firebaseAuthService.signOut());
     } on CustomException catch (e) {
-      throw ServerFailure(e.message);
+      return Left(ServerFailure(e.message));
     } catch (e) {
       log('Exception in AuthRepoImplementation.signOut method:  ${e.toString()}');
-      throw ServerFailure('حدث خطأ، يرجى المحاولة مرة أخرى لاحقًا.');
+      return Left(ServerFailure('حدث خطأ، يرجى المحاولة مرة أخرى لاحقًا.'));
     }
   }
 

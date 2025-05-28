@@ -51,6 +51,7 @@ class CustomButton extends StatelessWidget {
                   imageIcon!,
                   width: 24,
                   height: 24,
+                  color: Colors.white,
                 ),
                 const SizedBox(width: 12)
               ],
