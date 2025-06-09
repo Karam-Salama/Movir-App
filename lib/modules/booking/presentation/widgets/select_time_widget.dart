@@ -16,40 +16,50 @@ class SelectTimeWidget extends StatelessWidget {
         final times = bookingCubit.availableTimes;
         final selectedTime = bookingCubit.selectedTime;
 
+        if (times.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              'No available times',
+              style: TextStyle(color: AppColors.whiteColor),
+            ),
+          );
+        }
+
         return SizedBox(
-          height: 50,
+          height: 60,
           child: ListView.builder(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
             scrollDirection: Axis.horizontal,
             itemCount: times.length,
             itemBuilder: (context, index) {
               final time = times[index];
               final isSelected = time == selectedTime;
-
               return GestureDetector(
                 onTap: () => bookingCubit.selectTime(time),
                 child: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  width: 80,
+                  margin: const EdgeInsets.only(right: 12),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColors.darkColor
+                        ? AppColors.primaryColor.withOpacity(0.2)
                         : AppColors.transparent,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primaryColor
                           : AppColors.lightGrey2,
-                      width: 1,
+                      width: 2,
                     ),
                   ),
                   child: Center(
                     child: Text(
                       time,
-                      style: TextStyle(
-                        color: isSelected
-                            ? AppColors.primaryColor
-                            : AppColors.whiteColor,
+                      style: const TextStyle(
+                        color: AppColors.whiteColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

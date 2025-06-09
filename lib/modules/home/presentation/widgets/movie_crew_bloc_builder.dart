@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../cubit/home_cubit.dart';
 import '../cubit/home_states.dart';
 import 'movie_crew_list_view.dart';
+import 'shimmer_crew_list_view.dart';
 
 class MovieCrewBlocBuilder extends StatelessWidget {
   const MovieCrewBlocBuilder({super.key});
@@ -16,9 +16,7 @@ class MovieCrewBlocBuilder extends StatelessWidget {
           current is MovieCrewFailureState,
       builder: (context, state) {
         if (state is MovieCrewLoadingState) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return ShimmerCrewListView();
         }
 
         if (state is MovieCrewFailureState) {
@@ -31,8 +29,7 @@ class MovieCrewBlocBuilder extends StatelessWidget {
         if (state is MovieCrewSuccessState) {
           return MoviewCrewListView(crewList: state.crew);
         }
-
-        return const Center(child: CircularProgressIndicator());
+        return ShimmerCrewListView();
       },
     );
   }

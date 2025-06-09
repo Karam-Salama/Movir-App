@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class CustomSocialContainer extends StatelessWidget {
-  const CustomSocialContainer(
-      {super.key, required this.image, required this.onTap});
+  const CustomSocialContainer({
+    super.key,
+    required this.image,
+    required this.onTap,
+  });
   final String image;
   final void Function()? onTap;
   @override

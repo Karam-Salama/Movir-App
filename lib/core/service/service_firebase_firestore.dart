@@ -18,28 +18,35 @@ class FirabaseFirestoreService implements DatabaseService {
         await firestore.collection(path).add(data);
       }
     } on FirebaseAuthException catch (e) {
-      log('Exception in FirabaseFirestoreService.addData method: ${e.toString()}');
+      log('Exception in FirebaseFirestoreService.addData: ${e.toString()}');
       if (e.code == 'permission-denied') {
-        CustomException(message: 'ليس لديك صلاحيات الوصول');
+        throw CustomException(
+            message: 'You do not have permission to access this resource.');
       } else if (e.code == 'unavailable') {
-        CustomException(message: 'خدمة البيانات غير متوفرة. جرب مرة أخرى');
+        throw CustomException(
+            message:
+                'The service is currently unavailable. Please try again later.');
       } else if (e.code == 'deadline-exceeded') {
-        CustomException(message: 'تم إنتهاء الوقت المطلوب. جرب مرة اخرى');
+        throw CustomException(
+            message: 'The operation timed out. Please try again.');
       } else if (e.code == 'already-exists') {
-        CustomException(message: 'البيانات موجودة بالفعل');
+        throw CustomException(message: 'The data already exists.');
       } else if (e.code == 'invalid-argument') {
-        CustomException(message: 'البيانات المرسلة غير صالحة');
+        throw CustomException(message: 'Invalid data provided.');
       } else if (e.code == 'unauthenticated') {
-        CustomException(message: 'ليس لديك صلاحيات الوصول');
+        throw CustomException(
+            message: 'You need to be authenticated to access this resource.');
       } else if (e.code == 'network-request-failed') {
-        throw CustomException(message: 'يرجى التحقق من الاتصال بالانترنت.');
+        throw CustomException(
+            message: 'Network error. Please check your internet connection.');
       } else {
         throw CustomException(
-            message: 'حدث خطأ، يرجى المحاولة مرة أخرى لاحقًا.');
+            message: 'An unexpected error occurred. Please try again later.');
       }
     } catch (e) {
       log('Exception in FirabaseFirestoreService.addData method: ${e.toString()}');
-      throw CustomException(message: 'حدث خطأ، يرجى المحاولة مرة أخرى لاحقًا.');
+      throw CustomException(
+          message: 'Failed to add data. Please try again later.');
     }
   }
 
@@ -52,19 +59,20 @@ class FirabaseFirestoreService implements DatabaseService {
     } catch (e) {
       log('Exception in FirabaseFirestoreService.getUserData method: ${e.toString()}');
       throw CustomException(
-          message: 'حدث خطاء، يرجى المحاولة مرة اخرى لاحقًا.');
+          message: 'Failed to add data. Please try again later.');
     }
   }
-  
+
   @override
-  Future<bool> checkIfDataExists({required String path, required String documentId}) async{
+  Future<bool> checkIfDataExists(
+      {required String path, required String documentId}) async {
     try {
       var data = await firestore.collection(path).doc(documentId).get();
       return data.exists;
     } catch (e) {
       log('Exception in FirabaseFirestoreService.checkIfDataExists method: ${e.toString()}');
       throw CustomException(
-          message: 'حدث خطاء، يرجى المحاولة مرة اخرى لاحقًا.');
+          message: 'Failed to add data. Please try again later.');
     }
   }
 }

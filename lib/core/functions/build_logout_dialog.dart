@@ -9,12 +9,7 @@ void buildLogoutDialog(BuildContext context, SignOutCubit signOutCubit) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        actionsAlignment: MainAxisAlignment.end,
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Colors.amber),
-        ),
         title: Text(
           "Logout",
           style: AppTextStyle.Kanit700style16Black,

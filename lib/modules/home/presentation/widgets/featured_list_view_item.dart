@@ -65,7 +65,7 @@ class FeaturedListViewItem extends StatelessWidget {
                           width: 100,
                         ),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(12.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +92,8 @@ class FeaturedListViewItem extends StatelessWidget {
                           children: [
                             const Icon(
                               Icons.star,
-                              color: Colors.amber,
+                              color: AppColors.yellowColor,
+                              size: 16,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -105,7 +106,7 @@ class FeaturedListViewItem extends StatelessWidget {
                               style: AppTextStyle.Kanit400style12Grey,
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   )
@@ -116,10 +117,11 @@ class FeaturedListViewItem extends StatelessWidget {
               top: 0,
               right: 0,
               child: IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.favorite_outline,
-                  )),
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.favorite_outline,
+                ),
+              ),
             ),
           ],
         ),

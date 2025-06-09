@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/functions/navigation.dart';
 import '../../../../core/utils/app_assets.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_strings.dart';
@@ -65,7 +63,11 @@ class ConfirmationViewBody extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 text: AppStrings.backToHome,
                 onPressed: () {
-                  customNavigate(context, BottomNavBar.routeName);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BottomNavBar()),
+                    (route) => false,
+                  );
                 }),
           ],
         ),

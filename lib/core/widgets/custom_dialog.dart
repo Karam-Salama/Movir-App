@@ -42,7 +42,8 @@ class CustomDialog extends StatelessWidget {
           const SizedBox(height: 24),
           CustomButton(
             style: AppTextStyle.Kanit700style16Black.copyWith(
-                color: AppColors.greyColor),
+              color: AppColors.whiteColor,
+            ),
             mainAxisAlignment: MainAxisAlignment.center,
             text: textButton,
             backGroundColor: AppColors.primaryColor,

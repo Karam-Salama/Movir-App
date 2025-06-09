@@ -91,6 +91,10 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
                             .validate()) {
                           bookingCubit.checkoutFormKey.currentState!.save();
                           final booking = Booking(
+                            userId: bookingCubit.uid,
+                            movieId: widget.movieDetailsModel.id!.toString(),
+                            cinemaId:
+                                bookingCubit.selectedCinema!.id.toString(),
                             movieName: widget.movieDetailsModel.title!,
                             movieCategories: widget.movieDetailsModel.genres!
                                 .map((e) => e.name)
@@ -122,17 +126,32 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
                                 transactions: [paypalPayment.toJson()],
                                 note: "Thank you for booking.",
                                 onSuccess: (params) async {
-                                  await BookingDatabase.insertBooking(booking);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => BlocProvider.value(
-                                        value: bookingCubit,
-                                        child:
-                                            ConfirmationView(booking: booking),
+                                  print('Payment success, saving booking...');
+                                  try {
+                                    await BookingDatabase.insertBooking(
+                                        booking);
+                                    print(
+                                        'Booking saved successfully: ${booking.seats}');
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            BlocProvider.value(
+                                          value: bookingCubit,
+                                          child: ConfirmationView(
+                                            booking: booking,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  } catch (e) {
+                                    print('Error saving booking: $e');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text('Error saving booking: $e')),
+                                    );
+                                  }
                                 },
                                 onError: (error) {},
                                 onCancel: () {},

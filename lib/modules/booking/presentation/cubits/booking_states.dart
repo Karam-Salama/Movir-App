@@ -87,3 +87,12 @@ class PaymentMethodChangedState extends BookingStates {
   final PaymentMethod method;
   PaymentMethodChangedState(this.method);
 }
+
+class SeatsLoadingState extends BookingStates {}
+
+class SeatsLoadedState extends BookingStates {}
+
+class SeatsErrorState extends BookingStates {
+  final String error;
+  SeatsErrorState(this.error);
+}

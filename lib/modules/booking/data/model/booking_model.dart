@@ -1,9 +1,12 @@
 class Booking {
   final int? id;
+  final String userId; // أضفنا معرّف المستخدم
+  final String movieId; // أضفنا معرّف الفيلم
   final String movieName;
   final String moviePoster;
   final List<String> movieCategories;
   final String movieDuration;
+  final String cinemaId; // أضفنا معرّف السينما
   final String cinemaName;
   final String date;
   final String time;
@@ -12,10 +15,13 @@ class Booking {
 
   Booking({
     this.id,
+    required this.userId,
+    required this.movieId, // مطلوب الآن
     required this.movieName,
     required this.moviePoster,
     required this.movieCategories,
     required this.movieDuration,
+    required this.cinemaId, // مطلوب الآن
     required this.cinemaName,
     required this.date,
     required this.time,
@@ -31,10 +37,13 @@ class Booking {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'userId': userId,
+      'movieId': movieId, // أضفنا
       'movieName': movieName,
       'moviePoster': moviePoster,
       'movieCategories': movieCategories.join(','),
       'movieDuration': movieDuration,
+      'cinemaId': cinemaId, // أضفنا
       'cinemaName': cinemaName,
       'date': date,
       'time': time,
@@ -46,10 +55,13 @@ class Booking {
   factory Booking.fromMap(Map<String, dynamic> map) {
     return Booking(
       id: map['id'],
+      userId: map['userId'],
+      movieId: map['movieId'], // أضفنا
       movieName: map['movieName'],
       moviePoster: map['moviePoster'],
       movieCategories: (map['movieCategories'] as String).split(','),
       movieDuration: map['movieDuration'],
+      cinemaId: map['cinemaId'], // أضفنا
       cinemaName: map['cinemaName'],
       date: map['date'],
       time: map['time'],

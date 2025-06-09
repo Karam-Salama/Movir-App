@@ -15,6 +15,7 @@ class CustomButton extends StatelessWidget {
     required this.mainAxisAlignment,
     this.padding,
     this.imageIcon,
+    this.iconColor,
   });
 
   final Color? backGroundColor;
@@ -26,6 +27,7 @@ class CustomButton extends StatelessWidget {
   MainAxisAlignment mainAxisAlignment;
   double? padding;
   double? width;
+  Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +53,7 @@ class CustomButton extends StatelessWidget {
                   imageIcon!,
                   width: 24,
                   height: 24,
-                  color: Colors.white,
+                  color: iconColor,
                 ),
                 const SizedBox(width: 12)
               ],

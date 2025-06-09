@@ -1,125 +1,275 @@
+// ignore_for_file: unnecessary_null_comparison
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/functions/enum_paymentMethods.dart';
 import '../../../home/data/models/movie_details_model .dart';
+import '../../data/helpers/booking_database_helper.dart';
+import '../../data/model/booking_model.dart';
 import '../../data/server/models/cinema_model.dart';
 import '../../domain/repos/booking_repo.dart';
 import 'booking_states.dart';
 
 class BookingCubit extends Cubit<BookingStates> {
   final BookingRepo bookingRepo;
+  late MovieDetailsModel movieDetailsModel;
+
   BookingCubit({required this.bookingRepo}) : super(BookingInitialState());
 
+  // User information
   String? name;
   String? phone;
   String? email;
   GlobalKey<FormState> checkoutFormKey = GlobalKey<FormState>();
   AutovalidateMode checkoutAutoValidateMode = AutovalidateMode.disabled;
 
+  // Current userId
+  String uid = FirebaseAuth.instance.currentUser!.uid;
+  // Payment
   PaymentMethod paymentMethod = PaymentMethod.visa;
 
+  // Booking details
   List<DateTime> availableDates = [];
   DateTime? selectedDate;
-
   List<String> availableTimes = [];
   String? selectedTime;
-
   CinemaModel? selectedCinema;
   List<CinemaModel> cinemas = [];
 
+  // Seats management
   List<String> selectedSeats = [];
+  List<String> _reservedSeats = [];
 
-  Future<void> confirmBooking(MovieDetailsModel movie) async {
+  /// Initialize movie details
+  void initMovieDetails(MovieDetailsModel movie) {
+    movieDetailsModel = movie;
+  }
+
+  /// Check if seat is reserved
+  bool isSeatReserved(String seatId) {
+    return _reservedSeats.contains(seatId);
+  }
+
+  /// Check if seat is selected
+  bool isSeatSelected(String seatId) {
+    return selectedSeats.contains(seatId);
+  }
+
+  /// Confirm booking and save to database
+
+  Future<void> confirmBooking() async {
+    if (uid == null ||
+        selectedCinema == null ||
+        selectedDate == null ||
+        selectedTime == null ||
+        selectedSeats.isEmpty) {
+      emit(BookingError('Booking details are incomplete'));
+      return;
+    }
+
     emit(BookingLoading());
+
     try {
-      // Validate all fields
-      if (name!.isEmpty || phone!.isEmpty || email!.isEmpty) {
-        emit(BookingError('All fields are required'));
+      final isAvailable = await BookingDatabase.areSeatsAvailable(
+        movieId: movieDetailsModel.id.toString(),
+        cinemaId: selectedCinema!.id.toString(),
+        date: selectedDate!.toIso8601String(),
+        time: selectedTime!,
+        seatsToCheck: selectedSeats,
+      );
+
+      if (!isAvailable) {
+        emit(BookingError('Some seats are no longer available'));
+        return;
       }
 
-      // Here you would typically:
-      // 1. Process payment (based on paymentMethod)
-      // 2. Save booking to database/API
-      // 3. Send confirmation email
+      // Create booking object
+      final booking = Booking(
+        userId: uid,
+        movieId: movieDetailsModel.id.toString(),
+        movieName: movieDetailsModel.title!,
+        moviePoster: movieDetailsModel.posterPath!,
+        movieCategories: movieDetailsModel.genres!.map((e) => e.name).toList(),
+        movieDuration: movieDetailsModel.runtime.toString(),
+        cinemaId: selectedCinema!.id.toString(),
+        cinemaName: selectedCinema!.name,
+        date: selectedDate!.toIso8601String(),
+        time: selectedTime!,
+        seats: selectedSeats,
+      );
 
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
+      // 3. حفظ الحجز في قاعدة البيانات
+      await BookingDatabase.insertBooking(booking);
 
+      // 4. تحديث الحالة
       emit(BookingSuccess());
     } catch (e) {
       emit(BookingError(e.toString()));
     }
   }
 
+  Future<void> loadInitialData() async {
+    await getCinemas();
+    await getAvailableDates();
+    if (selectedDate != null) {
+      await getAvailableTimes(selectedDate!);
+    }
+    if (selectedCinema != null &&
+        selectedDate != null &&
+        selectedTime != null) {
+      await _loadReservedSeats();
+    }
+  }
+
+  Future<void> _loadReservedSeats() async {
+    if (movieDetailsModel == null ||
+        selectedCinema == null ||
+        selectedDate == null ||
+        selectedTime == null) return;
+
+    emit(SeatsLoadingState());
+    try {
+      _reservedSeats = await BookingDatabase.getReservedSeats(
+        movieId: movieDetailsModel.id.toString(),
+        cinemaId: selectedCinema!.id.toString(),
+        date: selectedDate!.toIso8601String(),
+        time: selectedTime!,
+      );
+      emit(SeatsLoadedState());
+    } catch (e) {
+      emit(SeatsErrorState(e.toString()));
+    }
+  }
+
+  /// Load reserved seats for current selection
+  Future<void> loadReservedSeats({
+    required String movieId,
+    required String cinemaId,
+    required DateTime date,
+    required String time,
+  }) async {
+    emit(SeatsLoadingState());
+
+    try {
+      _reservedSeats = await BookingDatabase.getReservedSeats(
+        movieId: movieId,
+        cinemaId: cinemaId,
+        date: date.toIso8601String(),
+        time: time,
+      );
+
+      emit(SeatsLoadedState());
+    } catch (e) {
+      emit(SeatsErrorState(e.toString()));
+    }
+  }
+
+  /// Check if seats are available
+  Future<bool> areSeatsAvailable(List<String> seatsToCheck) async {
+    return !seatsToCheck.any((seat) => _reservedSeats.contains(seat));
+  }
+
+  /// Toggle seat selection
+  void toggleSeatSelection(String seatId) {
+    if (_reservedSeats.contains(seatId)) return;
+
+    final newSeats = List<String>.from(selectedSeats);
+    if (newSeats.contains(seatId)) {
+      newSeats.remove(seatId);
+    } else {
+      newSeats.add(seatId);
+    }
+
+    selectedSeats = newSeats;
+    emit(SeatSelectionUpdatedState());
+  }
+
+  /// Change payment method
   void changePaymentMethod(PaymentMethod method) {
     paymentMethod = method;
     emit(PaymentMethodChangedState(method));
   }
 
-  void toggleSeatSelection(String seatId) {
-    if (selectedSeats.contains(seatId)) {
-      selectedSeats.remove(seatId);
-    } else {
-      selectedSeats.add(seatId);
+  /// Get cinemas list
+  Future<void> getCinemas() async {
+    emit(CinemasLoadingState());
+    final result = await bookingRepo.getCinemas();
+    result.fold(
+      (failure) => emit(CinemasErrorState(failure)),
+      (cinemas) {
+        this.cinemas = cinemas;
+        emit(CinemasSuccessState(cinemas));
+      },
+    );
+  }
+
+  /// Select cinema and load reserved seats
+  Future<void> selectCinema(CinemaModel cinema) async {
+    selectedCinema = cinema;
+    emit(CinemaSelectedState(cinema));
+
+    // إعادة تعيين المقاعد عند تغيير السينما
+    selectedSeats = [];
+    _reservedSeats = [];
+
+    if (selectedDate != null && selectedTime != null) {
+      await _loadReservedSeats();
     }
     emit(SeatSelectionUpdatedState());
   }
 
-  bool isSeatSelected(String seatId) {
-    return selectedSeats.contains(seatId);
-  }
-
-  Future<void> getCinemas() async {
-    emit(CinemasLoadingState());
-    final cinemas = await bookingRepo.getCinemas();
-    cinemas.fold(
-      (failure) => emit(CinemasErrorState(failure)),
-      (cinemas) => emit(CinemasSuccessState(cinemas)),
-    );
-  }
-
-  void selectCinema(CinemaModel cinema) {
-    selectedCinema = cinema;
-    emit(CinemaSelectedState(cinema));
-  }
-
   Future<void> getAvailableDates() async {
     emit(DatesLoadingState());
-    final result = await bookingRepo.getAvailableDates();
-    result.fold(
-      (failure) => emit(DatesErrorState(failure)),
-      (dates) {
-        availableDates = dates;
-        emit(DatesSuccessState(dates));
-        if (dates.isNotEmpty) {
-          selectDate(dates.first); // اختياري
-        }
-      },
-    );
+    try {
+      final result = await bookingRepo.getAvailableDates();
+      result.fold(
+        (failure) => emit(DatesErrorState(failure)),
+        (dates) {
+          availableDates = dates;
+          emit(DatesSuccessState(dates));
+          if (dates.isNotEmpty) {
+            selectDate(dates.first); // سيحدث الحالة تلقائياً
+          }
+        },
+      );
+    } catch (e) {
+      emit(DatesErrorState(e.toString()));
+    }
   }
 
   Future<void> getAvailableTimes(DateTime date) async {
     emit(TimesLoadingState());
-    final result = await bookingRepo.getAvailableTimes(date);
-    result.fold(
-      (failure) => emit(TimesErrorState(failure)),
-      (times) {
-        availableTimes = times;
-        emit(TimesSuccessState(times));
-        if (times.isNotEmpty) {
-          selectTime(times.first); // اختياري
-        }
-      },
-    );
+    try {
+      final result = await bookingRepo.getAvailableTimes(date);
+      result.fold(
+        (failure) => emit(TimesErrorState(failure)),
+        (times) {
+          availableTimes = times;
+          emit(TimesSuccessState(times));
+          if (times.isNotEmpty) {
+            selectTime(times.first); // سيحدث الحالة تلقائياً
+          }
+        },
+      );
+    } catch (e) {
+      emit(TimesErrorState(e.toString()));
+    }
   }
 
-  void selectDate(DateTime date) {
+  void selectDate(DateTime date) async {
     selectedDate = date;
-    emit(DateSelectedState(date));
+    emit(DateSelectedState(date)); // <-- تأكد من وجود هذه الحالة
+
+    // جلب الأوقات المتاحة للتاريخ المحدد
+    if (selectedCinema != null) {
+      await getAvailableTimes(date);
+    }
   }
 
   void selectTime(String time) {
     selectedTime = time;
-    emit(TimeSelectedState(time));
+    emit(TimeSelectedState(time)); // <-- تأكد من وجود هذه الحالة
   }
 }

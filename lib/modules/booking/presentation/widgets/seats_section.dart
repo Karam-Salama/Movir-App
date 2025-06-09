@@ -9,8 +9,13 @@ import 'seat_row_widget.dart';
 import 'seat_status_widget.dart';
 
 class SeatsSection extends StatelessWidget {
-  const SeatsSection({super.key, required this.movieDetailsModel});
+  const SeatsSection({
+    super.key,
+    required this.movieDetailsModel,
+    required this.cinemaId,
+  });
   final MovieDetailsModel movieDetailsModel;
+  final String cinemaId;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +32,6 @@ class SeatsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Screen Image
           Container(
             decoration: BoxDecoration(
               boxShadow: [
@@ -54,23 +58,42 @@ class SeatsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Seat Rows (with row numbers)
-          const SeatRowWidget(seatCount: 6, rowNumber: 1),
-          const SeatRowWidget(seatCount: 8, rowNumber: 2),
-          const SeatRowWidget(seatCount: 8, rowNumber: 3),
-          const SeatRowWidget(seatCount: 8, rowNumber: 4),
-          const SeatRowWidget(seatCount: 6, rowNumber: 5),
-
+          SeatRowWidget(
+            seatCount: 6,
+            rowNumber: 1,
+            movieId: movieDetailsModel.id.toString(),
+            cinemaId: cinemaId,
+          ),
+          SeatRowWidget(
+            seatCount: 8,
+            rowNumber: 2,
+            movieId: movieDetailsModel.id.toString(),
+            cinemaId: cinemaId,
+          ),
+          SeatRowWidget(
+            seatCount: 8,
+            rowNumber: 3,
+            movieId: movieDetailsModel.id.toString(),
+            cinemaId: cinemaId,
+          ),
+          SeatRowWidget(
+            seatCount: 8,
+            rowNumber: 4,
+            movieId: movieDetailsModel.id.toString(),
+            cinemaId: cinemaId,
+          ),
+          SeatRowWidget(
+            seatCount: 6,
+            rowNumber: 5,
+            movieId: movieDetailsModel.id.toString(),
+            cinemaId: cinemaId,
+          ),
           const SizedBox(height: 8),
-
           Divider(
             color: AppColors.lightGrey2.withOpacity(0.5),
             thickness: 1,
           ),
-
           const SizedBox(height: 8),
-
-          // Seat Status Legend
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

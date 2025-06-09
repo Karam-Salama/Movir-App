@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-
 import '../../../../core/utils/app_strings.dart';
 import '../../../booking/presentation/widgets/booking_view_app_bar.dart';
-import '../../../home/presentation/views/home_view.dart';
 
 class TicketsViewBody extends StatelessWidget {
   const TicketsViewBody({super.key});

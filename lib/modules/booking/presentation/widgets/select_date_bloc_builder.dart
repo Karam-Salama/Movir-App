@@ -24,7 +24,10 @@ class SelectDateBlocBuilder extends StatelessWidget {
         }
 
         if (state is DatesErrorState) {
-          return Text(state.error);
+          return Text(
+            state.error,
+            style: const TextStyle(color: AppColors.whiteColor),
+          );
         }
 
         if (state is DatesSuccessState || state is DateSelectedState) {

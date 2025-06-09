@@ -12,8 +12,15 @@ class BookingView extends StatelessWidget {
   const BookingView({super.key, required this.movieDetailsModel});
   static const String routeName = '/booking_view';
   final MovieDetailsModel movieDetailsModel;
+
   @override
   Widget build(BuildContext context) {
+    final bookingCubit = BookingCubit(bookingRepo: getIt<BookingRepo>())
+      ..initMovieDetails(movieDetailsModel)
+      ..loadInitialData()
+      ..getCinemas()
+      ..getAvailableDates();
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -24,11 +31,8 @@ class BookingView extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        child: BlocProvider(
-          create: (context) => BookingCubit(bookingRepo: getIt<BookingRepo>())
-            ..getCinemas()
-            ..getAvailableDates()
-            ..getAvailableTimes(DateTime.now()),
+        child: BlocProvider.value(
+          value: bookingCubit,
           child: BookingViewBody(movieDetailsModel: movieDetailsModel),
         ),
       ),

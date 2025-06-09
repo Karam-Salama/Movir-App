@@ -55,6 +55,7 @@ class LogoutBlocConsumer extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 imageIcon: Assets.assetsImagesLogoutImage,
                 backGroundColor: AppColors.primaryColor,
+                iconColor: AppColors.whiteColor,
               );
       },
     );

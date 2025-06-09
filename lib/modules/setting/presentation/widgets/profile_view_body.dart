@@ -18,6 +18,7 @@ class ProfileViewBody extends StatelessWidget {
             children: [
               CustomAppBar(
                 text: AppStrings.profile,
+                isBack: true,
                 onTap: () {},
               ),
             ],
