@@ -71,31 +71,30 @@ class BookingViewBody extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 24),
-                  // عند زر التأكيد:
                   CustomButton(
                     text: AppStrings.bookNow,
                     style: AppTextStyle.Kanit700style16Black,
                     backGroundColor: AppColors.primaryColor,
                     mainAxisAlignment: MainAxisAlignment.center,
                     onPressed: () async {
-                      await bookingCubit.confirmBooking();
-
-                      if (bookingCubit.state is BookingSuccess) {
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => BlocProvider.value(
-                                    value: bookingCubit,
-                                    child: SummaryView(
-                                      movieDetailsModel: movieDetailsModel,
-                                    ))));
-                      } else if (bookingCubit.state is BookingError) {
+                      print('Selected seats: ${bookingCubit.selectedSeats}');
+                      if (bookingCubit.selectedSeats.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text((bookingCubit.state as BookingError)
-                                  .message)),
+                              content: Text('Please select at least one seat')),
                         );
+                        return;
                       }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider.value(
+                            value: bookingCubit,
+                            child: SummaryView(
+                                movieDetailsModel: movieDetailsModel),
+                          ),
+                        ),
+                      );
                     },
                   )
                 ],

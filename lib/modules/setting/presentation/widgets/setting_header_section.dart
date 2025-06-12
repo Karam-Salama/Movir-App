@@ -9,6 +9,7 @@ class SettingHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = getUser();
     return Row(
       children: [
         Container(
@@ -20,7 +21,7 @@ class SettingHeaderSection extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              getUserPrefixLetter(),
+              getUserPrefixLetter(user.name),
               style: AppTextStyle.Kanit400style16White,
             ),
           ),
@@ -30,11 +31,11 @@ class SettingHeaderSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              getUser().name,
+              user.name,
               style: AppTextStyle.Kanit400style16White,
             ),
             Text(
-              getUser().email,
+              user.email,
               style: AppTextStyle.Kanit400style16White.copyWith(
                 fontSize: 12,
               ),
@@ -45,8 +46,18 @@ class SettingHeaderSection extends StatelessWidget {
     );
   }
 
-  getUserPrefixLetter() {
-    return getUser().name.split(' ')[0][0].toLowerCase() +
-        getUser().name.split(' ')[1][0].toLowerCase();
+  String getUserPrefixLetter(String name) {
+    // Handle empty or null name
+    if (name.isEmpty) return "?";
+
+    final parts = name.trim().split(' ');
+
+    // If only one word, return first letter
+    if (parts.length == 1) {
+      return parts[0][0].toUpperCase();
+    }
+
+    // If multiple words, return first letters of first two words
+    return parts[0][0].toUpperCase() + parts[1][0].toUpperCase();
   }
 }

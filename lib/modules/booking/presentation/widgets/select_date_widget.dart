@@ -69,7 +69,6 @@ class SelectDateWidget extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.whiteColor,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],

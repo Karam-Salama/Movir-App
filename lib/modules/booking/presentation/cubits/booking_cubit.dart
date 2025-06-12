@@ -1,12 +1,13 @@
 // ignore_for_file: unnecessary_null_comparison
 
+import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/functions/enum_paymentMethods.dart';
+import '../../../../core/utils/api_const.dart';
 import '../../../home/data/models/movie_details_model .dart';
-import '../../data/helpers/booking_database_helper.dart';
 import '../../data/model/booking_model.dart';
 import '../../data/server/models/cinema_model.dart';
 import '../../domain/repos/booking_repo.dart';
@@ -59,54 +60,73 @@ class BookingCubit extends Cubit<BookingStates> {
 
   /// Confirm booking and save to database
 
-  Future<void> confirmBooking() async {
+  Future<Either<String, Booking>> confirmBooking({String? paymentId}) async {
     if (uid == null ||
         selectedCinema == null ||
         selectedDate == null ||
         selectedTime == null ||
         selectedSeats.isEmpty) {
-      emit(BookingError('Booking details are incomplete'));
-      return;
+      emit(BookingError('Booking details are incomplete or no seats selected'));
+      return Left('Booking details are incomplete or no seats selected');
     }
 
     emit(BookingLoading());
 
     try {
-      final isAvailable = await BookingDatabase.areSeatsAvailable(
+      final availability = await bookingRepo.areSeatsAvailable(
         movieId: movieDetailsModel.id.toString(),
         cinemaId: selectedCinema!.id.toString(),
-        date: selectedDate!.toIso8601String(),
-        time: selectedTime!,
-        seatsToCheck: selectedSeats,
-      );
-
-      if (!isAvailable) {
-        emit(BookingError('Some seats are no longer available'));
-        return;
-      }
-
-      // Create booking object
-      final booking = Booking(
-        userId: uid,
-        movieId: movieDetailsModel.id.toString(),
-        movieName: movieDetailsModel.title!,
-        moviePoster: movieDetailsModel.posterPath!,
-        movieCategories: movieDetailsModel.genres!.map((e) => e.name).toList(),
-        movieDuration: movieDetailsModel.runtime.toString(),
-        cinemaId: selectedCinema!.id.toString(),
-        cinemaName: selectedCinema!.name,
-        date: selectedDate!.toIso8601String(),
+        date: selectedDate!,
         time: selectedTime!,
         seats: selectedSeats,
       );
 
-      // 3. حفظ الحجز في قاعدة البيانات
-      await BookingDatabase.insertBooking(booking);
+      return await availability.fold(
+        (error) async {
+          emit(BookingError(error));
+          return Left(error);
+        },
+        (isAvailable) async {
+          if (!isAvailable) {
+            final error = 'Some seats are no longer available';
+            emit(BookingError(error));
+            return Left(error);
+          }
 
-      // 4. تحديث الحالة
-      emit(BookingSuccess());
+          final booking = Booking(
+            userId: uid,
+            movieId: movieDetailsModel.id.toString(),
+            movieName: movieDetailsModel.title!,
+            moviePoster:
+                APIImageUrls.baseImageUrl + movieDetailsModel.posterPath!,
+            movieCategories:
+                movieDetailsModel.genres!.map((e) => e.name).toList(),
+            movieDuration: movieDetailsModel.runtime.toString(),
+            cinemaId: selectedCinema!.id.toString(),
+            cinemaName: selectedCinema!.name,
+            date: selectedDate!,
+            time: selectedTime!,
+            seats: selectedSeats,
+            paymentId: paymentId,
+          );
+
+          final result = await bookingRepo.bookMovie(booking);
+          return result.fold(
+            (error) {
+              emit(BookingError(error));
+              return Left(error);
+            },
+            (_) {
+              emit(BookingSuccess(booking));
+              return Right(booking);
+            },
+          );
+        },
+      );
     } catch (e) {
-      emit(BookingError(e.toString()));
+      final error = 'Failed to complete booking: ${e.toString()}';
+      emit(BookingError(error));
+      return Left(error);
     }
   }
 
@@ -119,51 +139,37 @@ class BookingCubit extends Cubit<BookingStates> {
     if (selectedCinema != null &&
         selectedDate != null &&
         selectedTime != null) {
-      await _loadReservedSeats();
+      await loadReservedSeats();
     }
   }
 
-  Future<void> _loadReservedSeats() async {
-    if (movieDetailsModel == null ||
-        selectedCinema == null ||
+  Future<void> loadReservedSeats() async {
+    if (selectedCinema == null ||
         selectedDate == null ||
-        selectedTime == null) return;
+        selectedTime == null) {
+      return;
+    }
 
     emit(SeatsLoadingState());
-    try {
-      _reservedSeats = await BookingDatabase.getReservedSeats(
-        movieId: movieDetailsModel.id.toString(),
-        cinemaId: selectedCinema!.id.toString(),
-        date: selectedDate!.toIso8601String(),
-        time: selectedTime!,
-      );
-      emit(SeatsLoadedState());
-    } catch (e) {
-      emit(SeatsErrorState(e.toString()));
-    }
-  }
 
-  /// Load reserved seats for current selection
-  Future<void> loadReservedSeats({
-    required String movieId,
-    required String cinemaId,
-    required DateTime date,
-    required String time,
-  }) async {
-    emit(SeatsLoadingState());
+    final result = await bookingRepo.getReservedSeats(
+      movieId: movieDetailsModel.id.toString(),
+      cinemaId: selectedCinema!.id.toString(),
+      date: selectedDate!,
+      time: selectedTime!,
+    );
 
-    try {
-      _reservedSeats = await BookingDatabase.getReservedSeats(
-        movieId: movieId,
-        cinemaId: cinemaId,
-        date: date.toIso8601String(),
-        time: time,
-      );
-
-      emit(SeatsLoadedState());
-    } catch (e) {
-      emit(SeatsErrorState(e.toString()));
-    }
+    result.fold(
+      (error) => emit(SeatsErrorState(error)),
+      (reservedSeats) {
+        _reservedSeats = reservedSeats;
+        selectedSeats = []; // إعادة تعيين المقاعد المحددة
+        emit(SeatsLoadedState());
+        emit(SeatSelectionUpdatedState(
+            reservedSeats: _reservedSeats,
+            selectedSeats: selectedSeats)); // إعلام بالتحديث
+      },
+    );
   }
 
   /// Check if seats are available
@@ -173,17 +179,13 @@ class BookingCubit extends Cubit<BookingStates> {
 
   /// Toggle seat selection
   void toggleSeatSelection(String seatId) {
-    if (_reservedSeats.contains(seatId)) return;
-
-    final newSeats = List<String>.from(selectedSeats);
-    if (newSeats.contains(seatId)) {
-      newSeats.remove(seatId);
+    if (selectedSeats.contains(seatId)) {
+      selectedSeats.remove(seatId);
     } else {
-      newSeats.add(seatId);
+      selectedSeats.add(seatId);
     }
-
-    selectedSeats = newSeats;
-    emit(SeatSelectionUpdatedState());
+    emit(SeatSelectionUpdatedState(
+        reservedSeats: _reservedSeats, selectedSeats: selectedSeats));
   }
 
   /// Change payment method
@@ -210,14 +212,14 @@ class BookingCubit extends Cubit<BookingStates> {
     selectedCinema = cinema;
     emit(CinemaSelectedState(cinema));
 
-    // إعادة تعيين المقاعد عند تغيير السينما
     selectedSeats = [];
     _reservedSeats = [];
 
     if (selectedDate != null && selectedTime != null) {
-      await _loadReservedSeats();
+      await loadReservedSeats();
     }
-    emit(SeatSelectionUpdatedState());
+    emit(SeatSelectionUpdatedState(
+        reservedSeats: _reservedSeats, selectedSeats: selectedSeats));
   }
 
   Future<void> getAvailableDates() async {
@@ -260,16 +262,54 @@ class BookingCubit extends Cubit<BookingStates> {
 
   void selectDate(DateTime date) async {
     selectedDate = date;
-    emit(DateSelectedState(date)); // <-- تأكد من وجود هذه الحالة
+    emit(DateSelectedState(date));
 
-    // جلب الأوقات المتاحة للتاريخ المحدد
     if (selectedCinema != null) {
       await getAvailableTimes(date);
+    }
+
+    if (selectedCinema != null && selectedTime != null) {
+      await loadReservedSeats(); // إعادة تحميل المقاعد المحجوزة
     }
   }
 
   void selectTime(String time) {
     selectedTime = time;
-    emit(TimeSelectedState(time)); // <-- تأكد من وجود هذه الحالة
+    emit(TimeSelectedState(time));
+
+    if (selectedCinema != null && selectedDate != null) {
+      loadReservedSeats(); // إعادة تحميل المقاعد المحجوزة
+    }
+  }
+
+  // في BookingCubit
+  void getUserTickets() async {
+    emit(TicketsLoading());
+    try {
+      final ticketsStream = bookingRepo.getUserBookings(uid);
+      ticketsStream.listen((bookings) {
+        emit(TicketsSuccess(bookings));
+      }, onError: (error) {
+        emit(TicketsError(error.toString()));
+      });
+    } catch (e) {
+      emit(TicketsError('Failed to load tickets: ${e.toString()}'));
+    }
+  }
+
+  Future<void> deleteBooking(String bookingId) async {
+    emit(BookingDeletedLoading());
+    try {
+      final result = await bookingRepo.deleteBooking(bookingId);
+      result.fold(
+        (error) => emit(BookingError(error)),
+        (_) {
+          emit(BookingDeletedSuccess(bookingId));
+          getUserTickets(); // تحديث القائمة بعد الحذف
+        },
+      );
+    } catch (e) {
+      emit(BookingDeletedError('Failed to delete booking: ${e.toString()}'));
+    }
   }
 }

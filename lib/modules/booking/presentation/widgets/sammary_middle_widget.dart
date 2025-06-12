@@ -23,9 +23,8 @@ class SammaryMiddleWidget extends StatelessWidget {
         const SizedBox(height: 12),
         CustomSammaryMiddleRow(
             text1: "Date",
-            text2:
-                bookingCubit.selectedDate?.toLocal().toString().split(' ')[0] ??
-                    'Not selected'),
+            text2: bookingCubit.selectedDate?.toString().split(' ')[0] ??
+                'Not selected'),
         const SizedBox(height: 12),
         CustomSammaryMiddleRow(
             text1: "Time", text2: bookingCubit.selectedTime ?? 'Not selected'),

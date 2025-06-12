@@ -20,6 +20,7 @@ class SeatRowWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BookingCubit, BookingStates>(
+      buildWhen: (previous, current) => current is SeatSelectionUpdatedState,
       builder: (context, state) {
         final bookingCubit = context.read<BookingCubit>();
         return Container(

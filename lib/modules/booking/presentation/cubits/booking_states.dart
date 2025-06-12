@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/functions/enum_paymentMethods.dart';
+import '../../data/model/booking_model.dart';
 import '../../data/server/models/cinema_model.dart';
 
 @immutable
@@ -70,13 +71,24 @@ class TimesErrorState extends BookingStates {
   TimesErrorState(this.error);
 }
 
-class SeatSelectionUpdatedState extends BookingStates {}
+class SeatSelectionUpdatedState extends BookingStates {
+  final List<String> reservedSeats;
+  final List<String> selectedSeats;
+
+  SeatSelectionUpdatedState({
+    required this.reservedSeats,
+    required this.selectedSeats,
+  });
+}
 
 class BookingStateChanged extends BookingStates {}
 
 class BookingLoading extends BookingStates {}
 
-class BookingSuccess extends BookingStates {}
+class BookingSuccess extends BookingStates {
+  final Booking booking;
+  BookingSuccess(this.booking);
+}
 
 class BookingError extends BookingStates {
   final String message;
@@ -95,4 +107,28 @@ class SeatsLoadedState extends BookingStates {}
 class SeatsErrorState extends BookingStates {
   final String error;
   SeatsErrorState(this.error);
+}
+
+class TicketsLoading extends BookingStates {}
+
+class TicketsSuccess extends BookingStates {
+  final List<Booking> tickets;
+  TicketsSuccess(this.tickets);
+}
+
+class TicketsError extends BookingStates {
+  final String message;
+  TicketsError(this.message);
+}
+
+class BookingDeletedLoading extends BookingStates {}
+
+class BookingDeletedSuccess extends BookingStates {
+  final String bookingId;
+  BookingDeletedSuccess(this.bookingId);
+}
+
+class BookingDeletedError extends BookingStates {
+  final String message;
+  BookingDeletedError(this.message);
 }

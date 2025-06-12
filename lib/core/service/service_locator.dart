@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:movir_app/core/api/api_consumer.dart';
 import 'package:movir_app/modules/booking/domain/repos/booking_repo.dart';
 
@@ -20,24 +21,34 @@ import 'service_firebase_firestore.dart';
 final getIt = GetIt.instance;
 
 void setUpServiceLocator() {
+  // Initialize Firebase Firestore
+  final firestore = FirebaseFirestore.instance;
+
+  // Register services
   getIt.registerSingleton<CacheHelper>(CacheHelper());
   getIt.registerSingleton<FirebaseAuthService>(FirebaseAuthService());
   getIt.registerSingleton<DatabaseService>(FirabaseFirestoreService());
 
+  // Register repositories
   getIt.registerSingleton<AuthRepo>(
     AuthRepoImplement(
-        firebaseAuthService: getIt<FirebaseAuthService>(),
-        databaseService: getIt<DatabaseService>()),
+      firebaseAuthService: getIt<FirebaseAuthService>(),
+      databaseService: getIt<DatabaseService>(),
+    ),
   );
 
-  // Home and Booking Repositories
+  // Dio and API Consumers
   getIt.registerSingleton<Dio>(Dio());
   getIt.registerSingleton<ApiConsumer>(DioConsumer(dio: getIt<Dio>()));
+
+  // Register Home and Search Repositories
   getIt
       .registerSingleton<HomeRepo>(HomeRepoImplment(api: getIt<ApiConsumer>()));
-  getIt.registerSingleton<BookingRepo>(
-      BookingRepoImple(api: getIt<ApiConsumer>()));
-
   getIt.registerSingleton<SearchRepo>(
       SearchRepoImple(api: getIt<ApiConsumer>()));
+
+  // Register Booking Repository with Firestore dependency
+  getIt.registerSingleton<BookingRepo>(
+    BookingRepoImpl(firestore: firestore), // تم التعديل هنا
+  );
 }

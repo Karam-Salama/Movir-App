@@ -1,72 +1,87 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+
 class Booking {
-  final int? id;
-  final String userId; // أضفنا معرّف المستخدم
-  final String movieId; // أضفنا معرّف الفيلم
+  final String? id;
+  final String compositeKey;
+  final String userId;
+  final String movieId;
   final String movieName;
   final String moviePoster;
   final List<String> movieCategories;
   final String movieDuration;
-  final String cinemaId; // أضفنا معرّف السينما
+  final String cinemaId;
   final String cinemaName;
-  final String date;
+  final DateTime date;
   final String time;
   final List<String> seats;
   final int totalPrice;
+  final DateTime createdAt;
+  final String? paymentId;
 
   Booking({
     this.id,
     required this.userId,
-    required this.movieId, // مطلوب الآن
+    required this.movieId,
     required this.movieName,
     required this.moviePoster,
     required this.movieCategories,
     required this.movieDuration,
-    required this.cinemaId, // مطلوب الآن
+    required this.cinemaId,
     required this.cinemaName,
     required this.date,
     required this.time,
     required this.seats,
     int? totalPrice,
-  }) : totalPrice = totalPrice ?? _calculateTotalPrice(seats);
+    DateTime? createdAt,
+    this.paymentId,
+  })  : createdAt = createdAt ?? DateTime.now(),
+        totalPrice = totalPrice ?? seats.length * 40,
+        compositeKey =
+            '$movieId-$cinemaId-${DateFormat('d/M/yyyy').format(date)}-$time-${createdAt?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch}';
 
-  static int _calculateTotalPrice(List<String> seats) {
-    const pricePerSeat = 40;
-    return seats.length * pricePerSeat;
+  factory Booking.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    final dateFormat = DateFormat('d/M/yyyy');
+
+    return Booking(
+      id: doc.id,
+      userId: data['userId'] ?? '',
+      movieId: data['movieId'] ?? '',
+      movieName: data['movieName'] ?? '',
+      moviePoster: data['moviePoster'] ?? '',
+      movieCategories: List<String>.from(data['movieCategories'] ?? []),
+      movieDuration: data['movieDuration'] ?? '',
+      cinemaId: data['cinemaId'] ?? '',
+      cinemaName: data['cinemaName'] ?? '',
+      date: dateFormat.parse(data['date']),
+      time: data['time'] ?? '',
+      seats: List<String>.from(data['seats'] ?? []),
+      totalPrice: (data['totalPrice'] as num?)?.toInt() ?? 0,
+      paymentId: data['paymentId'],
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
+    final dateFormat = DateFormat('d/M/yyyy');
+
     return {
-      'id': id,
       'userId': userId,
-      'movieId': movieId, // أضفنا
+      'movieId': movieId,
       'movieName': movieName,
       'moviePoster': moviePoster,
-      'movieCategories': movieCategories.join(','),
+      'movieCategories': movieCategories,
       'movieDuration': movieDuration,
-      'cinemaId': cinemaId, // أضفنا
+      'cinemaId': cinemaId,
       'cinemaName': cinemaName,
-      'date': date,
+      'date': dateFormat.format(date),
       'time': time,
-      'seats': seats.join(','),
+      'seats': seats,
       'totalPrice': totalPrice,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'paymentId': paymentId,
+      'compositeKey': compositeKey,
     };
-  }
-
-  factory Booking.fromMap(Map<String, dynamic> map) {
-    return Booking(
-      id: map['id'],
-      userId: map['userId'],
-      movieId: map['movieId'], // أضفنا
-      movieName: map['movieName'],
-      moviePoster: map['moviePoster'],
-      movieCategories: (map['movieCategories'] as String).split(','),
-      movieDuration: map['movieDuration'],
-      cinemaId: map['cinemaId'], // أضفنا
-      cinemaName: map['cinemaName'],
-      date: map['date'],
-      time: map['time'],
-      seats: (map['seats'] as String).split(','),
-      totalPrice: map['totalPrice'],
-    );
   }
 }

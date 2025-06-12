@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movir_app/core/functions/formate_runtime.dart';
 
 import '../../../../core/utils/api_const.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -58,7 +59,7 @@ class ConfirmationHeaderWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                booking.movieDuration,
+                formattedRuntime(int.parse(booking.movieDuration)),
                 style: AppTextStyle.Kanit400style16White.copyWith(
                   fontSize: 14,
                   color: AppColors.blackColor,

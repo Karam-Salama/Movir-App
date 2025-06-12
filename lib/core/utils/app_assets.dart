@@ -172,4 +172,16 @@ class Assets {
   /// assets/images/sign_out_image.png
   static const String assetsImagesLogoutImage =
       "assets/images/sign_out_image.png";
+
+  /// assetsSvgscalendarIcon
+  /// assets/svgs/calendar_icon.svg
+  static const String assetsSvgscalendarIcon = "assets/svgs/calendar_icon.svg";
+
+  /// assetsSvgsTimeIcon
+  /// assets/svgs/time_icon.svg
+  static const String assetsSvgsTimeIcon = "assets/svgs/time_icon.svg";
+
+  /// assetsSvgsSeatIcon
+  /// assets/svgs/seat_icon.svg
+  static const String assetsSvgsSeatIcon = "assets/svgs/seat_icon.svg";
 }

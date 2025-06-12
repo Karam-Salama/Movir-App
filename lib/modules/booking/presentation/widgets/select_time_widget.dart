@@ -39,8 +39,9 @@ class SelectTimeWidget extends StatelessWidget {
               return GestureDetector(
                 onTap: () => bookingCubit.selectTime(time),
                 child: Container(
-                  width: 80,
+                  width: 100,
                   margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primaryColor.withOpacity(0.2)
@@ -59,7 +60,6 @@ class SelectTimeWidget extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.whiteColor,
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
