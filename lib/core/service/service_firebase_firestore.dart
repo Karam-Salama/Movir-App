@@ -63,6 +63,17 @@ class FirabaseFirestoreService implements DatabaseService {
     }
   }
 
+  Future<void> deleteData(
+      {required String path, required String documentId}) async {
+    try {
+      await firestore.collection(path).doc(documentId).delete();
+    } catch (e) {
+      log('Exception in FirabaseFirestoreService.deleteData method: ${e.toString()}');
+      throw CustomException(
+          message: 'Failed to add data. Please try again later.');
+    }
+  }
+
   @override
   Future<bool> checkIfDataExists(
       {required String path, required String documentId}) async {

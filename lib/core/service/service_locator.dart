@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:movir_app/core/api/api_consumer.dart';
 import 'package:movir_app/modules/booking/domain/repos/booking_repo.dart';
+import 'package:movir_app/modules/wishlist/data/repos/favorite_repo_implementation.dart';
+import 'package:movir_app/modules/wishlist/domain/repos/favorite_repo.dart';
 
 import '../../modules/auth/data/repos/auth_repo_implement.dart';
 import '../../modules/auth/domain/repos/auth_repo.dart';
@@ -50,5 +52,11 @@ void setUpServiceLocator() {
   // Register Booking Repository with Firestore dependency
   getIt.registerSingleton<BookingRepo>(
     BookingRepoImpl(firestore: firestore), // تم التعديل هنا
+  );
+
+  getIt.registerSingleton<FavoriteRepo>(
+    FavoriteRepoImplementation(
+      firabaseFirestoreService: FirabaseFirestoreService(),
+    ),
   );
 }

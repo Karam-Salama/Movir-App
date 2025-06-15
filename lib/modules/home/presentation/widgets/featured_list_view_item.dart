@@ -10,8 +10,16 @@ import '../cubit/home_cubit.dart';
 import '../views/movie_details_view.dart';
 
 class FeaturedListViewItem extends StatelessWidget {
-  const FeaturedListViewItem({super.key, required this.movieModel});
+  const FeaturedListViewItem({
+    super.key,
+    required this.movieModel,
+    this.onTap,
+    required this.isFavorite,
+  });
   final MovieModel movieModel;
+  final Function()? onTap;
+  final bool isFavorite;
+
   @override
   Widget build(BuildContext context) {
     var itemWidth = MediaQuery.of(context).size.width;
@@ -117,9 +125,10 @@ class FeaturedListViewItem extends StatelessWidget {
               top: 0,
               right: 0,
               child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.favorite_outline,
+                onPressed: onTap,
+                icon: Icon(
+                  Icons.favorite,
+                  color: isFavorite ? Colors.red : Colors.white,
                 ),
               ),
             ),
