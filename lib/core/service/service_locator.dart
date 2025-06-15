@@ -57,6 +57,7 @@ void setUpServiceLocator() {
   getIt.registerSingleton<FavoriteRepo>(
     FavoriteRepoImplementation(
       firabaseFirestoreService: FirabaseFirestoreService(),
+      api: getIt<ApiConsumer>(),
     ),
   );
 }

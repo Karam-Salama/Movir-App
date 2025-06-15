@@ -1,3 +1,5 @@
+import 'movie_details_model .dart';
+
 class MovieModel {
   bool? adult;
   String? backdropPath;
@@ -47,6 +49,19 @@ class MovieModel {
       video: json['video'],
       voteAverage: json['vote_average'],
       voteCount: json['vote_count'],
+    );
+  }
+  factory MovieModel.fromDetailsModel(MovieDetailsModel details) {
+    return MovieModel(
+      id: details.id,
+      title: details.title,
+      posterPath: details.posterPath,
+      backdropPath: details.backdropPath,
+      overview: details.overview,
+      voteAverage: details.voteAverage,
+      voteCount: details.voteCount,
+      releaseDate: details.releaseDate,
+      genreIds: details.genres?.map((g) => g.id).toList(),
     );
   }
 }

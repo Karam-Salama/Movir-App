@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/app_assets.dart';
+import '../cubit/favorite_cubit.dart';
 import '../widget/wishlist_view_body.dart';
 
 class WishlistView extends StatelessWidget {
@@ -8,6 +10,8 @@ class WishlistView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<FavoriteCubit>().loadFavoriteMovies();
+
     return Scaffold(
       body: Container(
         width: double.infinity,

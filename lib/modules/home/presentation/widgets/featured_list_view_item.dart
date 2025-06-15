@@ -5,8 +5,8 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import '../../../../core/utils/api_const.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_text_styles.dart';
+import '../../../wishlist/presentation/cubit/favorite_cubit.dart';
 import '../../data/models/movie_model.dart';
-import '../cubit/home_cubit.dart';
 import '../views/movie_details_view.dart';
 
 class FeaturedListViewItem extends StatelessWidget {
@@ -88,10 +88,12 @@ class FeaturedListViewItem extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          context
-                              .read<HomeCubit>()
-                              .getCategoryNamesString(movieModel.genreIds!),
-                          maxLines: 2,
+                          movieModel.genreIds != null &&
+                                  movieModel.genreIds!.isNotEmpty
+                              ? context
+                                  .read<FavoriteCubit>()
+                                  .getCategoryNamesString(movieModel.genreIds!)
+                              : 'No genres',
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyle.Kanit400style12Grey,
                         ),
