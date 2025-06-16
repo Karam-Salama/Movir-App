@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_paypal_payment/flutter_paypal_payment.dart';
+import 'package:pay_with_paymob/pay_with_paymob.dart';
 import '../../../../core/functions/enum_paymentMethods.dart';
 import '../../../../core/functions/validation.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -24,6 +25,44 @@ class CustomUserInfoForm extends StatefulWidget {
 }
 
 class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
+  @override
+  void initState() {
+    PaymentData.initialize(
+      apiKey: KApiKey,
+      iframeId: KIframeId,
+      integrationCardId: KIntegrationCardId,
+      integrationMobileWalletId: KIntegrationMobileWalletId,
+
+      // Optional User Data
+      userData: UserData(
+        email: context.read<BookingCubit>().email ?? "NA",
+        phone: context.read<BookingCubit>().phone ?? "NA",
+        name: context.read<BookingCubit>().name ?? "NA",
+        lastName: "NA",
+      ),
+
+      // Optional Style Customizations
+      style: Style(
+        primaryColor: AppColors.primaryColor,
+        scaffoldColor: AppColors.darkColor,
+        appBarBackgroundColor: AppColors.transparent,
+        appBarForegroundColor: Colors.white,
+        textStyle: AppTextStyle.Kanit400style16White.copyWith(fontSize: 16),
+        buttonStyle: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: Colors.white,
+          textStyle: AppTextStyle.Kanit700style16Black,
+          shape: StadiumBorder(
+            side: BorderSide(color: AppColors.primaryColor, width: 1),
+          ),
+        ),
+        circleProgressColor: AppColors.primaryColor,
+        unselectedColor: Colors.grey,
+      ),
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookingCubit = context.read<BookingCubit>();
@@ -78,27 +117,17 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
               ),
               const SizedBox(height: 8),
               CustomPaymentMethod(
-                method: PaymentMethod.wallet,
-                selectedMethod: bookingCubit.selectedPaymentMethod,
-                onChanged: (method) {
-                  if (method != null) {
-                    bookingCubit.selectPaymentMethod(method);
-                  }
-                },
-              ),
-              const SizedBox(height: 8),
-              CustomPaymentMethod(
-                method: PaymentMethod.visa,
-                selectedMethod: bookingCubit.selectedPaymentMethod,
-                onChanged: (method) {
-                  if (method != null) {
-                    bookingCubit.selectPaymentMethod(method);
-                  }
-                },
-              ),
-              const SizedBox(height: 8),
-              CustomPaymentMethod(
                 method: PaymentMethod.paypal,
+                selectedMethod: bookingCubit.selectedPaymentMethod,
+                onChanged: (method) {
+                  if (method != null) {
+                    bookingCubit.selectPaymentMethod(method);
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+              CustomPaymentMethod(
+                method: PaymentMethod.walletOrVisa,
                 selectedMethod: bookingCubit.selectedPaymentMethod,
                 onChanged: (method) {
                   if (method != null) {
@@ -133,13 +162,67 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
         case PaymentMethod.paypal:
           _handlePayWithPayPal(context, bookingCubit);
           break;
-        case PaymentMethod.visa:
-          // Implement visa payment
-          break;
-        case PaymentMethod.wallet:
-          // Implement wallet payment
+        case PaymentMethod.walletOrVisa:
+          _handlePayWithWalletOrVisa(context, bookingCubit);
           break;
       }
+    } else {
+      setState(() {
+        bookingCubit.checkoutAutoValidateMode = AutovalidateMode.always;
+      });
+    }
+  }
+
+  void _handlePayWithWalletOrVisa(
+      BuildContext context, BookingCubit bookingCubit) async {
+    if (bookingCubit.checkoutFormKey.currentState!.validate()) {
+      bookingCubit.checkoutFormKey.currentState!.save();
+      final totalPrice = bookingCubit.selectedSeats.length * 40;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentView(
+            price: double.parse(totalPrice.toString()),
+            onPaymentSuccess: () async {
+              try {
+                final paymentId =
+                    'visa_${DateTime.now().millisecondsSinceEpoch}';
+
+                final result =
+                    await bookingCubit.confirmBooking(paymentId: paymentId);
+
+                result.fold(
+                  (error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(error)),
+                    );
+                  },
+                  (booking) async {
+                    await bookingCubit.loadReservedSeats();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ConfirmationView(booking: booking),
+                      ),
+                    );
+                  },
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
+              }
+            },
+            onPaymentError: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Visa Payment Failed')),
+              );
+            },
+          ),
+        ),
+      );
     } else {
       setState(() {
         bookingCubit.checkoutAutoValidateMode = AutovalidateMode.always;
@@ -181,7 +264,6 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
                     return error;
                   },
                   (booking) async {
-                    // إعادة تحميل المقاعد المحجوزة قبل الانتقال
                     await bookingCubit.loadReservedSeats();
                     Navigator.pushReplacement(
                       context,
@@ -264,10 +346,8 @@ class CustomPaymentMethod extends StatelessWidget {
 
   IconData _getIcon() {
     switch (method) {
-      case PaymentMethod.wallet:
+      case PaymentMethod.walletOrVisa:
         return Icons.account_balance_wallet;
-      case PaymentMethod.visa:
-        return Icons.credit_card;
       case PaymentMethod.paypal:
         return Icons.paypal;
     }
