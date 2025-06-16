@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_paypal_payment/flutter_paypal_payment.dart';
+import '../../../../core/functions/enum_paymentMethods.dart';
 import '../../../../core/functions/validation.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_constants.dart';
@@ -67,6 +68,45 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
                 validator: Validation.validatePhone,
               ),
               const SizedBox(height: 30),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  AppStrings.paymentMethod,
+                  style:
+                      AppTextStyle.Kanit400style16White.copyWith(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 8),
+              CustomPaymentMethod(
+                method: PaymentMethod.wallet,
+                selectedMethod: bookingCubit.selectedPaymentMethod,
+                onChanged: (method) {
+                  if (method != null) {
+                    bookingCubit.selectPaymentMethod(method);
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+              CustomPaymentMethod(
+                method: PaymentMethod.visa,
+                selectedMethod: bookingCubit.selectedPaymentMethod,
+                onChanged: (method) {
+                  if (method != null) {
+                    bookingCubit.selectPaymentMethod(method);
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+              CustomPaymentMethod(
+                method: PaymentMethod.paypal,
+                selectedMethod: bookingCubit.selectedPaymentMethod,
+                onChanged: (method) {
+                  if (method != null) {
+                    bookingCubit.selectPaymentMethod(method);
+                  }
+                },
+              ),
+              const SizedBox(height: 30),
               state is BookingLoading
                   ? const CircularProgressIndicator(
                       color: AppColors.primaryColor,
@@ -75,15 +115,36 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
                       style: AppTextStyle.Kanit700style16Black,
                       backGroundColor: AppColors.primaryColor,
                       mainAxisAlignment: MainAxisAlignment.center,
-                      text: AppStrings.payWithPayPal,
-                      onPressed: () =>
-                          _handlePayWithPayPal(context, bookingCubit),
+                      text: AppStrings.payNow,
+                      onPressed: () => _handlePayment(context, bookingCubit),
                     ),
             ],
           ),
         );
       },
     );
+  }
+
+  void _handlePayment(BuildContext context, BookingCubit bookingCubit) async {
+    if (bookingCubit.checkoutFormKey.currentState!.validate()) {
+      bookingCubit.checkoutFormKey.currentState!.save();
+
+      switch (bookingCubit.selectedPaymentMethod) {
+        case PaymentMethod.paypal:
+          _handlePayWithPayPal(context, bookingCubit);
+          break;
+        case PaymentMethod.visa:
+          // Implement visa payment
+          break;
+        case PaymentMethod.wallet:
+          // Implement wallet payment
+          break;
+      }
+    } else {
+      setState(() {
+        bookingCubit.checkoutAutoValidateMode = AutovalidateMode.always;
+      });
+    }
   }
 
   void _handlePayWithPayPal(
@@ -115,11 +176,13 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
 
                 result.fold(
                   (error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(error)),
-                    );
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(error)));
+                    return error;
                   },
-                  (booking) {
+                  (booking) async {
+                    // إعادة تحميل المقاعد المحجوزة قبل الانتقال
+                    await bookingCubit.loadReservedSeats();
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -127,12 +190,11 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
                             ConfirmationView(booking: booking),
                       ),
                     );
+                    return booking;
                   },
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: ${e.toString()}')),
-                );
+                return 'Error: ${e.toString()}';
               }
             },
             onError: (error) {
@@ -152,6 +214,62 @@ class _CustomUserInfoFormState extends State<CustomUserInfoForm> {
       setState(() {
         bookingCubit.checkoutAutoValidateMode = AutovalidateMode.always;
       });
+    }
+  }
+}
+
+class CustomPaymentMethod extends StatelessWidget {
+  const CustomPaymentMethod({
+    super.key,
+    required this.method,
+    required this.selectedMethod,
+    required this.onChanged,
+  });
+  final PaymentMethod method;
+  final PaymentMethod? selectedMethod;
+  final ValueChanged<PaymentMethod?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.primaryColor,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _getIcon(),
+            color: AppColors.primaryColor,
+            size: 24,
+          ),
+          const SizedBox(width: 10),
+          Text(method.name, style: AppTextStyle.Kanit400style16White),
+          const Spacer(),
+          Radio<PaymentMethod>(
+            value: method,
+            groupValue: selectedMethod,
+            onChanged: onChanged,
+            activeColor: AppColors.primaryColor,
+          ),
+          const SizedBox(width: 10),
+        ],
+      ),
+    );
+  }
+
+  IconData _getIcon() {
+    switch (method) {
+      case PaymentMethod.wallet:
+        return Icons.account_balance_wallet;
+      case PaymentMethod.visa:
+        return Icons.credit_card;
+      case PaymentMethod.paypal:
+        return Icons.paypal;
     }
   }
 }

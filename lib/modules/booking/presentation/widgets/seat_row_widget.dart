@@ -64,45 +64,53 @@ class SeatItem extends StatelessWidget {
     required this.isSelected,
     this.onTap,
   });
-
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final seatSize = (screenWidth - 80) / 11;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          width: seatSize,
-          height: seatSize,
-          decoration: BoxDecoration(
-            color: isReserved
-                ? Colors.white
-                : isSelected
-                    ? AppColors.primaryColor.withOpacity(0.7)
-                    : AppColors.lightGrey2.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(
-              color: isReserved
-                  ? Colors.white
-                  : isSelected
-                      ? AppColors.primaryColor
-                      : AppColors.lightGrey2.withOpacity(0.5),
+    return BlocBuilder<BookingCubit, BookingStates>(
+      buildWhen: (previous, current) =>
+          current is SeatSelectionUpdatedState || current is SeatsLoadedState,
+      builder: (context, state) {
+        final bookingCubit = context.read<BookingCubit>();
+        final isReserved = bookingCubit.isSeatReserved(seatId);
+        final isSelected = bookingCubit.isSeatSelected(seatId);
+        final screenWidth = MediaQuery.of(context).size.width;
+        final seatSize = (screenWidth - 80) / 11;
+        print('Seat $seatId - Reserved: $isReserved, Selected: $isSelected');
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: InkWell(
+            onTap: isReserved ? null : onTap,
+            child: Container(
+              width: seatSize,
+              height: seatSize,
+              decoration: BoxDecoration(
+                color: isReserved
+                    ? Colors.white
+                    : isSelected
+                        ? AppColors.primaryColor.withOpacity(0.7)
+                        : AppColors.lightGrey2.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: isReserved
+                      ? Colors.white
+                      : isSelected
+                          ? AppColors.primaryColor
+                          : AppColors.lightGrey2.withOpacity(0.5),
+                ),
+              ),
+              child: Icon(
+                Icons.chair,
+                size: seatSize * 0.6,
+                color: isReserved
+                    ? Colors.black // اللون الأسود للكرسي الأبيض
+                    : isSelected
+                        ? Colors.white
+                        : AppColors.lightGrey2,
+              ),
             ),
           ),
-          child: Icon(
-            Icons.chair,
-            color: isReserved
-                ? Colors.black
-                : isSelected
-                    ? Colors.white
-                    : AppColors.lightGrey2,
-            size: seatSize * 0.6,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../../core/functions/enum_paymentMethods.dart';
 import '../../../../core/utils/api_const.dart';
 import '../../../home/data/models/movie_details_model .dart';
@@ -26,10 +25,16 @@ class BookingCubit extends Cubit<BookingStates> {
   GlobalKey<FormState> checkoutFormKey = GlobalKey<FormState>();
   AutovalidateMode checkoutAutoValidateMode = AutovalidateMode.disabled;
 
+  // Payment method
+  PaymentMethod selectedPaymentMethod = PaymentMethod.paypal;
+
+  void selectPaymentMethod(PaymentMethod method) {
+    selectedPaymentMethod = method;
+    emit(PaymentMethodChangedState(method));
+  }
+
   // Current userId
   String uid = FirebaseAuth.instance.currentUser!.uid;
-  // Payment
-  PaymentMethod paymentMethod = PaymentMethod.visa;
 
   // Booking details
   List<DateTime> availableDates = [];
@@ -50,7 +55,9 @@ class BookingCubit extends Cubit<BookingStates> {
 
   /// Check if seat is reserved
   bool isSeatReserved(String seatId) {
-    return _reservedSeats.contains(seatId);
+    final isReserved = _reservedSeats.contains(seatId);
+    print('Checking seat $seatId - Reserved: $isReserved');
+    return isReserved;
   }
 
   /// Check if seat is selected
@@ -73,6 +80,8 @@ class BookingCubit extends Cubit<BookingStates> {
     emit(BookingLoading());
 
     try {
+      print('Checking seat availability for seats: $selectedSeats');
+
       final availability = await bookingRepo.areSeatsAvailable(
         movieId: movieDetailsModel.id.toString(),
         cinemaId: selectedCinema!.id.toString(),
@@ -83,12 +92,14 @@ class BookingCubit extends Cubit<BookingStates> {
 
       return await availability.fold(
         (error) async {
+          print('Seat availability error: $error');
           emit(BookingError(error));
           return Left(error);
         },
         (isAvailable) async {
           if (!isAvailable) {
             final error = 'Some seats are no longer available';
+            print(error);
             emit(BookingError(error));
             return Left(error);
           }
@@ -110,13 +121,18 @@ class BookingCubit extends Cubit<BookingStates> {
             paymentId: paymentId,
           );
 
+          print('Creating booking for seats: ${selectedSeats}');
+
           final result = await bookingRepo.bookMovie(booking);
           return result.fold(
             (error) {
+              print('Booking error: $error');
               emit(BookingError(error));
               return Left(error);
             },
-            (_) {
+            (_) async {
+              print('Booking successful, loading reserved seats');
+              await loadReservedSeats();
               emit(BookingSuccess(booking));
               return Right(booking);
             },
@@ -125,6 +141,7 @@ class BookingCubit extends Cubit<BookingStates> {
       );
     } catch (e) {
       final error = 'Failed to complete booking: ${e.toString()}';
+      print(error);
       emit(BookingError(error));
       return Left(error);
     }
@@ -152,24 +169,30 @@ class BookingCubit extends Cubit<BookingStates> {
 
     emit(SeatsLoadingState());
 
-    final result = await bookingRepo.getReservedSeats(
-      movieId: movieDetailsModel.id.toString(),
-      cinemaId: selectedCinema!.id.toString(),
-      date: selectedDate!,
-      time: selectedTime!,
-    );
+    try {
+      final result = await bookingRepo.getReservedSeats(
+        movieId: movieDetailsModel.id.toString(),
+        cinemaId: selectedCinema!.id.toString(),
+        date: selectedDate!,
+        time: selectedTime!,
+      );
 
-    result.fold(
-      (error) => emit(SeatsErrorState(error)),
-      (reservedSeats) {
-        _reservedSeats = reservedSeats;
-        selectedSeats = []; // إعادة تعيين المقاعد المحددة
-        emit(SeatsLoadedState());
-        emit(SeatSelectionUpdatedState(
+      result.fold(
+        (error) => emit(SeatsErrorState(error)),
+        (reservedSeats) {
+          _reservedSeats = reservedSeats;
+          print('✅ Updated reserved seats: $_reservedSeats');
+          // إرسال تغيير الحالة مرتين لضمان التحديث
+          emit(SeatsLoadedState());
+          emit(SeatSelectionUpdatedState(
             reservedSeats: _reservedSeats,
-            selectedSeats: selectedSeats)); // إعلام بالتحديث
-      },
-    );
+            selectedSeats: selectedSeats,
+          ));
+        },
+      );
+    } catch (e) {
+      emit(SeatsErrorState('Failed to load seats: ${e.toString()}'));
+    }
   }
 
   /// Check if seats are available
@@ -186,12 +209,6 @@ class BookingCubit extends Cubit<BookingStates> {
     }
     emit(SeatSelectionUpdatedState(
         reservedSeats: _reservedSeats, selectedSeats: selectedSeats));
-  }
-
-  /// Change payment method
-  void changePaymentMethod(PaymentMethod method) {
-    paymentMethod = method;
-    emit(PaymentMethodChangedState(method));
   }
 
   /// Get cinemas list
@@ -268,18 +285,29 @@ class BookingCubit extends Cubit<BookingStates> {
       await getAvailableTimes(date);
     }
 
+    selectedSeats = [];
+    _reservedSeats = [];
+
     if (selectedCinema != null && selectedTime != null) {
-      await loadReservedSeats(); // إعادة تحميل المقاعد المحجوزة
+      await loadReservedSeats();
     }
+    emit(SeatSelectionUpdatedState(
+        reservedSeats: _reservedSeats, selectedSeats: selectedSeats));
   }
 
   void selectTime(String time) {
     selectedTime = time;
     emit(TimeSelectedState(time));
 
+    selectedSeats = [];
+    _reservedSeats = [];
+
     if (selectedCinema != null && selectedDate != null) {
-      loadReservedSeats(); // إعادة تحميل المقاعد المحجوزة
+      loadReservedSeats();
     }
+
+    emit(SeatSelectionUpdatedState(
+        reservedSeats: _reservedSeats, selectedSeats: selectedSeats));
   }
 
   // في BookingCubit

@@ -47,6 +47,7 @@ dependencies:
   flutter_paypal_payment: ^1.0.8
   firebase_database: ^11.3.7
   intl: ^0.20.2
+  pay_with_paymob: ^1.4.0
 
 #==================================  Dev  Dependencies  Section  ==============================
 dev_dependencies:

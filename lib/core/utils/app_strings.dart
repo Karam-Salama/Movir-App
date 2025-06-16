@@ -54,11 +54,14 @@ abstract class AppStrings {
   static const String phone = "PHONE";
   static const String email = "EMAIL";
   static const String paymentMethod = "Select payment method";
+  static const String wallet = "wallet";
   static const String visa = "visa";
   static const String paypal = "paypal";
   static const String cash = "cash";
+
   static const String payWithPayPal = "Pay With PayPal";
   static const String confirmation = "confirmation";
+  static const String payNow = "Pay Now";
   static const String backToHome = "Back to Home";
   static const String exportToPdf = "Export to PDF";
   static const String exportToImage = "Export to Image";

@@ -64,18 +64,31 @@ class BookingRepoImpl implements BookingRepo {
       final dateFormat = DateFormat('d/M/yyyy');
       final formattedDate = dateFormat.format(date);
 
-      final query = _firestore.collection('bookings').where('compositeKey',
-          isEqualTo: '$movieId-$cinemaId-$formattedDate-$time');
+      print(
+          'Querying for: movieId=$movieId, cinemaId=$cinemaId, date=$formattedDate, time=$time');
+
+      final query = _firestore
+          .collection('bookings')
+          .where('movieId', isEqualTo: movieId)
+          .where('cinemaId', isEqualTo: cinemaId)
+          .where('date', isEqualTo: formattedDate)
+          .where('time', isEqualTo: time);
 
       final snapshot = await query.get();
 
+      print('Found ${snapshot.docs.length} bookings matching criteria');
+
       final reservedSeats = <String>[];
       for (final doc in snapshot.docs) {
-        reservedSeats.addAll(List<String>.from(doc['seats']));
+        final seats = List<String>.from(doc['seats'] ?? []);
+        print('Booking ${doc.id} has seats: $seats');
+        reservedSeats.addAll(seats);
       }
 
+      print('Total reserved seats: $reservedSeats');
       return Right(reservedSeats);
     } catch (e) {
+      print('Error getting reserved seats: ${e.toString()}');
       return Left("Failed to get reserved seats: ${e.toString()}");
     }
   }
@@ -120,9 +133,15 @@ class BookingRepoImpl implements BookingRepo {
   Future<Either<String, void>> bookMovie(Booking booking) async {
     try {
       final docRef = _firestore.collection('bookings').doc();
-      await docRef.set(booking.toFirestore()..['id'] = docRef.id);
+      final data = booking.toFirestore();
+      data['id'] = docRef.id;
+
+      print('Saving booking with data: $data');
+
+      await docRef.set(data);
       return const Right(null);
     } catch (e) {
+      print('Error booking movie: ${e.toString()}');
       return Left("Failed to book movie: ${e.toString()}");
     }
   }
